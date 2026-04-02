@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>7769 精準收益計算</title>
+    <style>
+        :root { --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-gray: #8e8e93; }
+        body { font-family: -apple-system, sans-serif; background: #f2f2f7; padding: 10px; margin: 0; }
+        .card { max-width: 450px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin: 10px auto; }
+        h2 { text-align: center; margin-top: 0; font-size: 18px; color: #1c1c1e; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: 600; color: var(--ios-gray); font-size: 12px; }
+        input { width: 100%; padding: 10px; border: 1px solid #d1d1d6; border-radius: 10px; font-size: 15px; box-sizing: border-box; background: #fff; }
+        .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-end; }
+        .batch-box { background: #f8f8fb; padding: 12px; border-radius: 14px; border: 1px solid #eee; margin-bottom: 12px; }
+        .batch-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .btn-link { background: #fff2f2; color: var(--ios-red); border: 1px solid #ffdbdb; border-radius: 10px; padding: 10px; font-weight: 700; text-decoration: none; text-align: center; font-size: 13px; display: block; margin-bottom: 12px; }
+        .btn-fetch { background: #e5e5ea; color: var(--ios-blue); border: none; border-radius: 10px; padding: 10px; font-weight: 600; font-size: 13px; height: 40px; white-space: nowrap; cursor: pointer; }
+        .btn-calc { background: var(--ios-blue); color: white; border: none; border-radius: 12px; width: 100%; padding: 14px; font-size: 17px; font-weight: 600; cursor: pointer; }
+        
+        /* Log 顯示區與複製按鈕 */
+        .log-wrapper { position: relative; display: none; margin-top: 10px; }
+        #log-container { 
+            background: #2c2c2e; color: #34C759; padding: 12px; border-radius: 12px; 
+            font-family: monospace; font-size: 11px; line-height: 1.4;
+            max-height: 150px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+        }
+        .btn-copy {
+            position: absolute; right: 8px; top: 8px; background: rgba(255,255,255,0.1);
+            color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;
+            padding: 4px 8px; font-size: 10px; cursor: pointer; z-index: 10;
+        }
+        .btn-copy:active { background: rgba(255,255,255,0.3); }
+        .log-err { color: #FF3B30; }
+        .log-info { color: #007AFF; }
+
+        .result { margin-top: 15px; }
+        .summary-box { background: #e8f2ff; padding: 15px; border-radius: 14px; border: 1px solid #d0e3ff; margin-bottom: 15px; text-align: center; }
+        .detail-card { background: white; padding: 12px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; font-size: 13px; }
+        .line { display: flex; justify-content: space-between; margin-bottom: 5px; color: #3a3a3c; }
+        .val-big { font-size: 24px; color: var(--ios-green); font-weight: 800; }
+        .val-daily { font-size: 22px; color: var(--ios-red); font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>7769 鴻勁 分批收益明細</h2>
+    
+    <a href="https://www.wantgoo.com/stock/7769" target="_blank" class="btn-link">打開玩股網 (手動核對)</a>
+
+    <div class="row">
+        <div class="group" style="flex:2">
+            <label>成交價 (最新股價)</label>
+            <input type="number" id="price" value="3865">
+        </div>
+        <button class="btn-fetch" onclick="fetchPrice()">雲端抓取</button>
+        <div class="group" style="flex:1">
+            <label>年費率 (%)</label>
+            <input type="number" id="rate" value="2" step="0.1">
+        </div>
+    </div>
+
+    <div class="log-wrapper" id="log-wrapper">
+        <button class="btn-copy" onclick="copyLog()">複製 Log</button>
+        <div id="log-container"></div>
+    </div>
+
+    <div class="group">
+        <label>結束日期 (結算點)</label>
+        <input type="date" id="endDate" style="background:#f2f2f7;">
+    </div>
+
+    <div class="batch-box">
+        <div class="batch-title"><span>區間一：50 張 (3/06 起)</span><span id="dDisplay1" style="color:var(--ios-blue);"></span></div>
+    </div>
+
+    <div class="batch-box" style="background: #fff9f2; border-color: #ffe8cc;">
+        <div class="batch-title"><span>區間二：36 張 (3/19 起)</span><span id="dDisplay2" style="color:var(--ios-blue);"></span></div>
+    </div>
+
+    <button class="btn-calc" onclick="doTotalCalc()">重新計算詳細明細</button>
+
+    <div id="res" class="result">
+        <div class="summary-box">
+            <div style="font-size:14px; color:#0056b3; font-weight:600;">今日合計淨收益 (實領)</div>
+            <div class="val-daily" id="totalDaily"></div>
+            <div style="font-size:14px; color:#1c1c1e; margin-top:10px; font-weight:600;">累計實領總額</div>
+            <div class="val-big" id="totalNet"></div>
+        </div>
+
+        <div class="detail-card">
+            <div style="font-weight:700; color:var(--ios-blue); margin-bottom:6px; border-bottom:1px solid #eee;">明細一 (50張)</div>
+            <div class="line"><span>區間利息</span><span id="g1"></span></div>
+            <div class="line"><span>手續費 (20%)</span><span id="f1"></span></div>
+            <div class="line" style="color:var(--ios-red);"><span>所得稅 (40%)</span><span id="t1"></span></div>
+            <div class="line" style="color:var(--ios-red);"><span>健保費 (2.11%)</span><span id="n1"></span></div>
+        </div>
+
+        <div class="detail-card">
+            <div style="font-weight:700; color:#e67e22; margin-bottom:6px; border-bottom:1px solid #eee;">明細二 (36張)</div>
+            <div class="line"><span>區間利息</span><span id="g2"></span></div>
+            <div class="line"><span>手續費 (20%)</span><span id="f2"></span></div>
+            <div class="line" style="color:var(--ios-red);"><span>所得稅 (40%)</span><span id="t2"></span></div>
+            <div class="line" style="color:var(--ios-red);"><span>健保費 (2.11%)</span><span id="n2"></span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxi2Xm_MZ1Bak8sAIfC-MiPaHERwuqpz8eSh8yRUy5efO8sa6Mur_XJ95BHhqYtKnJ7ww/exec';
+
+// 初始化結束日期為今天
+const today = new Date();
+document.getElementById('endDate').valueAsDate = today;
+
+function addLog(msg, type = '') {
+    const wrapper = document.getElementById('log-wrapper');
+    const container = document.getElementById('log-container');
+    wrapper.style.display = 'block';
+    const div = document.createElement('div');
+    if(type) div.className = 'log-' + type;
+    div.innerText = `> ${new Date().toLocaleTimeString()}: ${msg}`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function copyLog() {
+    const container = document.getElementById('log-container');
+    const btn = document.querySelector('.btn-copy');
+    const text = container.innerText;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerText;
+        btn.innerText = "已複製!";
+        setTimeout(() => { btn.innerText = originalText; }, 2000);
+    }).catch(() => {
+        alert('複製失敗');
+    });
+}
+
+async function fetchPrice() {
+    const btn = document.querySelector('.btn-fetch');
+    const container = document.getElementById('log-container');
+    container.innerHTML = ''; 
+    
+    addLog("啟動連線...", "info");
+    btn.innerText = "連線中...";
+    btn.disabled = true;
+
+    try {
+        addLog("請求中...");
+        const response = await fetch(GAS_URL, {
+            method: 'GET',
+            mode: 'cors',
+            redirect: 'follow'
+        });
+
+        addLog(`狀態: ${response.status}`);
+        const data = await response.json();
+        addLog(`數據已接收 (長度: ${JSON.stringify(data).length})`);
+
+        let price = null;
+
+        // 核心修正：深度解析 Yahoo 圖表格式
+        if (data.chart && data.chart.result && data.chart.result[0].meta) {
+            price = data.chart.result[0].meta.regularMarketPrice;
+            addLog("解析成功：從圖表 Meta 中取得 regularMarketPrice", "info");
+        } 
+        else if (data.price) {
+            price = data.price;
+        } 
+        else if (typeof data === 'number') {
+            price = data;
+        }
+
+        if (price && !isNaN(price)) {
+            document.getElementById('price').value = price;
+            addLog(`最終股價: ${price}`, "info");
+            btn.innerText = "更新成功";
+            doTotalCalc();
+        } else {
+            addLog("錯誤: 找不到預期的股價欄位", "err");
+            throw new Error("數據格式錯誤");
+        }
+
+    } catch (e) {
+        addLog(`失敗: ${e.message}`, "err");
+        btn.innerText = "失敗";
+    } finally {
+        setTimeout(() => {
+            btn.innerText = "雲端抓取";
+            btn.disabled = false;
+        }, 2000);
+    }
+}
+
+function calculateDetail(lots, price, rate, startStr, endStr) {
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 0) return { gross:0, fee:0, tax:0, nhi:0, net:0, daily:0, days:0 };
+    
+    const gross = Math.round((lots * 1000 * price * rate / 365) * diffDays);
+    const fee = Math.round(gross * 0.2); 
+    const base = gross - fee;
+    
+    let tax = 0, nhi = 0;
+    if (base >= 20000) { 
+        tax = Math.round(base * 0.4); 
+        nhi = Math.round(base * 0.0211); 
+    }
+    
+    const net = gross - fee - tax - nhi;
+    return { gross, fee, tax, nhi, net, daily: Math.floor(net / diffDays), days: diffDays };
+}
+
+function doTotalCalc() {
+    const P = parseFloat(document.getElementById('price').value) || 0;
+    const R = parseFloat(document.getElementById('rate').value) / 100 || 0;
+    const endStr = document.getElementById('endDate').value;
+    
+    const res1 = calculateDetail(50, P, R, "2026-03-06", endStr);
+    const res2 = calculateDetail(36, P, R, "2026-03-19", endStr);
+
+    document.getElementById('dDisplay1').innerText = res1.days + " 天";
+    document.getElementById('dDisplay2').innerText = res2.days + " 天";
+    
+    document.getElementById('g1').innerText = "$" + res1.gross.toLocaleString();
+    document.getElementById('f1').innerText = "-$" + res1.fee.toLocaleString();
+    document.getElementById('t1').innerText = "-$" + res1.tax.toLocaleString();
+    document.getElementById('n1').innerText = "-$" + res1.nhi.toLocaleString();
+    
+    document.getElementById('g2').innerText = "$" + res2.gross.toLocaleString();
+    document.getElementById('f2').innerText = "-$" + res2.fee.toLocaleString();
+    document.getElementById('t2').innerText = "-$" + res2.tax.toLocaleString();
+    document.getElementById('n2').innerText = "-$" + res2.nhi.toLocaleString();
+    
+    document.getElementById('totalDaily').innerText = "$" + (res1.daily + res2.daily).toLocaleString();
+    document.getElementById('totalNet').innerText = "$" + (res1.net + res2.net).toLocaleString();
+}
+
+window.onload = doTotalCalc;
+</script>
+</body>
+</html>
