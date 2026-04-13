@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>7769 收益計算 - 97張完整版</title>
+    <title>7769 收益計算 - 137張完整版</title>
     <style>
         :root { --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-gray: #8e8e93; }
         body { font-family: -apple-system, sans-serif; background: #f2f2f7; padding: 10px; margin: 0; }
@@ -31,7 +31,7 @@
 <body>
 
 <div class="card">
-    <h2>7769 鴻勁 收益明細 (97張)</h2>
+    <h2>7769 鴻勁 收益明細 (137張)</h2>
     
     <div class="row">
         <div class="group" style="flex:2">
@@ -59,7 +59,7 @@
         <div class="batch-info">2026/04/13 起</div>
     </div>
     <div class="batch-box" style="background: #f2faff; border-color: #d0e3ff;">
-        <div class="batch-title"><span>區間四：10 張 (1.25%)</span><span id="dDisplay4"></span></div>
+        <div class="batch-title"><span>區間四：50 張 (1.25%)</span><span id="dDisplay4"></span></div>
         <div class="batch-info">2026/04/13 起</div>
     </div>
 
@@ -67,7 +67,7 @@
 
     <div id="res" class="result">
         <div class="sim-box">
-            <div style="font-size:13px; color:#856404; font-weight:600;">💡 模擬 97張 借滿一年穩定收益</div>
+            <div style="font-size:13px; color:#856404; font-weight:600;">💡 模擬 137張 借滿一年穩定收益</div>
             <div class="val-daily" id="simDaily" style="color: #d97706;">$0</div>
             <div style="font-size:12px; color:#997404;">預估每日實領 (已扣除所有稅費)</div>
         </div>
@@ -84,7 +84,7 @@
             <div class="line"><span>50張 (2.0%)</span><span id="g1"></span></div>
             <div class="line"><span>36張 (2.0%)</span><span id="g2"></span></div>
             <div class="line"><span>1張 (1.5%)</span><span id="g3"></span></div>
-            <div class="line"><span>10張 (1.25%)</span><span id="g4"></span></div>
+            <div class="line"><span>50張 (1.25%)</span><span id="g4"></span></div>
             <div class="line" style="border-top:1px dashed #ccc; padding-top:4px; margin-top:4px; font-weight:700;">
                 <span>總計原始利息</span><span id="sumGross"></span>
             </div>
@@ -133,11 +133,10 @@ function doTotalCalc() {
     const P = parseFloat(document.getElementById('price').value) || 0;
     const endStr = document.getElementById('endDate').value;
     
-    // 計算四個區間
     const b1 = getGrossInfo(50, P, 0.02, "2026-03-06", endStr);
     const b2 = getGrossInfo(36, P, 0.02, "2026-03-19", endStr);
     const b3 = getGrossInfo(1, P, 0.015, "2026-04-13", endStr);
-    const b4 = getGrossInfo(10, P, 0.0125, "2026-04-13", endStr); // 新增 10張 1.25%
+    const b4 = getGrossInfo(50, P, 0.0125, "2026-04-13", endStr); // 改為 50張 1.25%
 
     document.getElementById('dDisplay1').innerText = b1.days + " 天";
     document.getElementById('dDisplay2').innerText = b2.days + " 天";
@@ -169,10 +168,10 @@ function doTotalCalc() {
     document.getElementById('totalDaily').innerText = "$" + Math.floor(finalNet / maxDays).toLocaleString();
     document.getElementById('totalNet').innerText = "$" + finalNet.toLocaleString();
 
-    // 模擬 97張 借滿一年 (365天) 的邏輯
+    // 模擬 137張 借滿一年 (365天)
     const simGrossA = (86 * 1000 * P * 0.02);    // 前86張 2%
     const simGrossB = (1 * 1000 * P * 0.015);    // 1張 1.5%
-    const simGrossC = (10 * 1000 * P * 0.0125);  // 10張 1.25%
+    const simGrossC = (50 * 1000 * P * 0.0125);  // 50張 1.25%
     const simTotalGross = simGrossA + simGrossB + simGrossC;
     
     const simFee = simTotalGross * 0.2;
