@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>7769 收益計算 - 137張完整版</title>
+    <title>7769 收益計算 - 178張完整版</title>
     <style>
         :root { --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-gray: #8e8e93; }
         body { font-family: -apple-system, sans-serif; background: #f2f2f7; padding: 10px; margin: 0; }
@@ -31,7 +31,7 @@
 <body>
 
 <div class="card">
-    <h2>7769 鴻勁 收益明細 (137張)</h2>
+    <h2>7769 鴻勁 收益明細 (178張)</h2>
     
     <div class="row">
         <div class="group" style="flex:2">
@@ -58,18 +58,22 @@
         <div class="batch-title"><span>區間三：1 張 (1.5%)</span><span id="dDisplay3"></span></div>
         <div class="batch-info">2026/04/13 起</div>
     </div>
-    <div class="batch-box" style="background: #f2faff; border-color: #d0e3ff;">
+    <div class="batch-box" style="background: #f2faff;">
         <div class="batch-title"><span>區間四：50 張 (1.25%)</span><span id="dDisplay4"></span></div>
         <div class="batch-info">2026/04/13 起</div>
+    </div>
+    <div class="batch-box" style="background: #fff0f0; border-color: #ffdada;">
+        <div class="batch-title"><span>區間五：41 張 (1.5%)</span><span id="dDisplay5"></span></div>
+        <div class="batch-info">2026/04/14 起</div>
     </div>
 
     <button class="btn-calc" onclick="doTotalCalc()">重新計算詳細明細</button>
 
     <div id="res" class="result">
         <div class="sim-box">
-            <div style="font-size:13px; color:#856404; font-weight:600;">💡 模擬 137張 借滿一年穩定收益</div>
+            <div style="font-size:13px; color:#856404; font-weight:600;">💡 模擬 178張 借滿一年穩定收益</div>
             <div class="val-daily" id="simDaily" style="color: #d97706;">$0</div>
-            <div style="font-size:12px; color:#997404;">預估每日實領 (已扣除所有稅費)</div>
+            <div style="font-size:12px; color:#997404;">預估每日實領 (已扣除稅費)</div>
         </div>
 
         <div class="summary-box">
@@ -85,6 +89,7 @@
             <div class="line"><span>36張 (2.0%)</span><span id="g2"></span></div>
             <div class="line"><span>1張 (1.5%)</span><span id="g3"></span></div>
             <div class="line"><span>50張 (1.25%)</span><span id="g4"></span></div>
+            <div class="line"><span>41張 (1.5%)</span><span id="g5"></span></div>
             <div class="line" style="border-top:1px dashed #ccc; padding-top:4px; margin-top:4px; font-weight:700;">
                 <span>總計原始利息</span><span id="sumGross"></span>
             </div>
@@ -136,19 +141,22 @@ function doTotalCalc() {
     const b1 = getGrossInfo(50, P, 0.02, "2026-03-06", endStr);
     const b2 = getGrossInfo(36, P, 0.02, "2026-03-19", endStr);
     const b3 = getGrossInfo(1, P, 0.015, "2026-04-13", endStr);
-    const b4 = getGrossInfo(50, P, 0.0125, "2026-04-13", endStr); // 改為 50張 1.25%
+    const b4 = getGrossInfo(50, P, 0.0125, "2026-04-13", endStr);
+    const b5 = getGrossInfo(41, P, 0.015, "2026-04-14", endStr); // 新增區間
 
     document.getElementById('dDisplay1').innerText = b1.days + " 天";
     document.getElementById('dDisplay2').innerText = b2.days + " 天";
     document.getElementById('dDisplay3').innerText = b3.days + " 天";
     document.getElementById('dDisplay4').innerText = b4.days + " 天";
+    document.getElementById('dDisplay5').innerText = b5.days + " 天";
     
     document.getElementById('g1').innerText = "$" + b1.gross.toLocaleString();
     document.getElementById('g2').innerText = "$" + b2.gross.toLocaleString();
     document.getElementById('g3').innerText = "$" + b3.gross.toLocaleString();
     document.getElementById('g4').innerText = "$" + b4.gross.toLocaleString();
+    document.getElementById('g5').innerText = "$" + b5.gross.toLocaleString();
 
-    const totalGross = b1.gross + b2.gross + b3.gross + b4.gross;
+    const totalGross = b1.gross + b2.gross + b3.gross + b4.gross + b5.gross;
     const totalFee = Math.round(totalGross * 0.2);
     const baseForTax = totalGross - totalFee;
     
@@ -159,7 +167,7 @@ function doTotalCalc() {
     }
     
     const finalNet = totalGross - totalFee - totalTax - totalNhi;
-    const maxDays = Math.max(b1.days, b2.days, b3.days, b4.days, 1);
+    const maxDays = Math.max(b1.days, b2.days, b3.days, b4.days, b5.days, 1);
     
     document.getElementById('sumGross').innerText = "$" + totalGross.toLocaleString();
     document.getElementById('sumFee').innerText = "-$" + totalFee.toLocaleString();
@@ -168,21 +176,13 @@ function doTotalCalc() {
     document.getElementById('totalDaily').innerText = "$" + Math.floor(finalNet / maxDays).toLocaleString();
     document.getElementById('totalNet').innerText = "$" + finalNet.toLocaleString();
 
-    // 模擬 137張 借滿一年 (365天)
-    const simGrossA = (86 * 1000 * P * 0.02);    // 前86張 2%
-    const simGrossB = (1 * 1000 * P * 0.015);    // 1張 1.5%
-    const simGrossC = (50 * 1000 * P * 0.0125);  // 50張 1.25%
-    const simTotalGross = simGrossA + simGrossB + simGrossC;
-    
-    const simFee = simTotalGross * 0.2;
-    const simBase = simTotalGross - simFee;
-    
-    let simTax = 0, simNhi = 0;
-    if (simBase >= 20000) {
-        simTax = simBase * 0.4;
-        simNhi = simBase * 0.0211;
-    }
-    const simNetYearly = simTotalGross - simFee - simTax - simNhi;
+    // 模擬 178張 借滿一年
+    const simGross = (86 * 1000 * P * 0.02) + (1 * 1000 * P * 0.015) + (50 * 1000 * P * 0.0125) + (41 * 1000 * P * 0.015);
+    const simFee = simGross * 0.2;
+    const simBase = simGross - simFee;
+    let sTax = 0, sNhi = 0;
+    if (simBase >= 20000) { sTax = simBase * 0.4; sNhi = simBase * 0.0211; }
+    const simNetYearly = simGross - simFee - sTax - sNhi;
     document.getElementById('simDaily').innerText = "$" + Math.floor(simNetYearly / 365).toLocaleString();
 }
 
