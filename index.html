@@ -3,189 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>7769 收益計算 - 178張免徵健保版</title>
+    <title>全球投資戰情室 v11.2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-gray: #8e8e93; }
-        body { font-family: -apple-system, sans-serif; background: #f2f2f7; padding: 10px; margin: 0; }
-        .card { max-width: 450px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin: 10px auto; }
-        h2 { text-align: center; margin-top: 0; font-size: 18px; color: #1c1c1e; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .group { margin-bottom: 12px; }
-        label { display: block; margin-bottom: 4px; font-weight: 600; color: var(--ios-gray); font-size: 12px; }
-        input { width: 100%; padding: 10px; border: 1px solid #d1d1d6; border-radius: 10px; font-size: 15px; box-sizing: border-box; background: #fff; }
-        .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-end; }
-        .batch-box { background: #f8f8fb; padding: 10px; border-radius: 14px; border: 1px solid #eee; margin-bottom: 8px; }
-        .batch-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 2px; display: flex; justify-content: space-between; }
-        .batch-info { font-size: 11px; color: var(--ios-gray); }
-        .btn-fetch { background: #e5e5ea; color: var(--ios-blue); border: none; border-radius: 10px; padding: 10px; font-weight: 600; font-size: 13px; height: 40px; cursor: pointer; }
-        .btn-calc { background: var(--ios-blue); color: white; border: none; border-radius: 12px; width: 100%; padding: 14px; font-size: 17px; font-weight: 600; cursor: pointer; }
-        .result { margin-top: 15px; }
-        .summary-box { background: #e8f2ff; padding: 15px; border-radius: 14px; border: 1px solid #d0e3ff; margin-bottom: 15px; text-align: center; }
-        .sim-box { background: #fff9e6; padding: 15px; border-radius: 14px; border: 1px solid #ffeeba; margin-bottom: 15px; text-align: center; }
-        .detail-card { background: white; padding: 12px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 10px; font-size: 13px; }
-        .line { display: flex; justify-content: space-between; margin-bottom: 5px; color: #3a3a3c; }
-        .val-big { font-size: 24px; color: var(--ios-green); font-weight: 800; }
-        .val-daily { font-size: 22px; color: var(--ios-red); font-weight: 700; }
-        .sub-title { font-weight: 700; color: var(--ios-blue); margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        :root {
+            --red: #ff6060; --green: #2eeb82; --bg: #080a0f; --card: #0f1318;
+            --card2: #141a24; --text: #e8edf2; --muted: #8a9ab5; --gold: #f5c842;
+            --alert: #ffdd00; --blue: #6cb8ff; --border: rgba(255,255,255,0.09);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text);
+            display: flex; flex-direction: column; align-items: center; padding: 16px; min-height: 100vh;
+            background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(88,166,255,0.07) 0%, transparent 70%);
+        }
+        .header { width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .header-title { font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 2px; }
+        .version-badge { background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.25); color: var(--blue); font-family: 'JetBrains Mono'; font-size: 10px; padding: 3px 8px; border-radius: 20px; }
+        .section-label { width: 100%; max-width: 900px; font-family: 'JetBrains Mono'; font-size: 10px; color: var(--muted); letter-spacing: 2px; margin: 14px 0 8px 2px; display: flex; align-items: center; gap: 8px; }
+        .span-all { grid-column: 1 / -1; }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .dashboard { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (min-width: 600px) { .dashboard { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+        .card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); min-height: 150px; display: flex; flex-direction: column; padding: 14px; position: relative; overflow: hidden; }
+        .card.up::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--red), transparent); }
+        .card.down::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent); }
+        .card.alert-active { border-color: rgba(255,204,0,0.4); background: linear-gradient(135deg, #0d1117 0%, rgba(255,204,0,0.05) 100%); }
+        .card.alert-active::before { background: linear-gradient(90deg, var(--alert), transparent) !important; }
+        .full-width { grid-column: 1 / -1; height: auto; min-height: 130px; }
+        .label { font-family: 'JetBrains Mono'; font-size: 10px; color: #9bafc8; margin-bottom: 6px; }
+        .main-val { font-family: 'Rajdhani', sans-serif; font-size: 1.6rem; font-weight: 700; line-height: 1; color: #fff; }
+        .sub-val { font-family: 'JetBrains Mono'; font-size: 11px; margin-top: 4px; }
+        .alert-hint { font-family: 'JetBrains Mono'; font-size: 10px; color: var(--alert); margin-top: 3px; font-weight: 600; }
+        .chart-container { width: 100%; height: 48px; margin-top: auto; }
+        .fng-area { grid-column: 1 / -1; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .fng-gauge-wrapper { position: relative; width: 210px; height: 108px; margin-top: 10px; }
+        #fngValue { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 700; position: absolute; bottom: 0; width: 100%; text-align: center; color: #fff; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-top: 16px; }
+        .btn-link { color: #d0dcea; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 54px; border-radius: 10px; background: var(--card2); border: 1px solid rgba(255,255,255,0.1); font-size: 11px; font-weight: 700; }
+        .btn-cnn { background: rgba(180,0,0,0.2) !important; color: #ff8888 !important; }
+        .btn-refresh { background: linear-gradient(135deg, #1a6fe0, #0051b5); color: white; border: none; padding: 16px; border-radius: 12px; font-family: 'Rajdhani', sans-serif; font-weight: 700; width: 100%; margin-top: 10px; cursor: pointer; grid-column: span 2; letter-spacing: 2px; }
+        #log-window { background: #080c12; padding: 10px; font-family: 'JetBrains Mono'; font-size: 9px; color: #3fb950; height: 64px; overflow-y: auto; width: 100%; max-width: 900px; border-radius: 10px; margin-top: 12px; white-space: pre-wrap; border: 1px solid var(--border); }
+        .loading { animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>7769 鴻勁 收益明細 (免徵健保)</h2>
-    
-    <div class="row">
-        <div class="group" style="flex:2">
-            <label>成交價 (最新股價)</label>
-            <input type="number" id="price" value="3865">
+<div class="header">
+    <div>
+        <div class="header-title">戰情室</div>
+        <div style="font-size:10px; color:var(--muted); font-family:'JetBrains Mono'">GLOBAL MARKET MONITOR</div>
+    </div>
+    <div class="version-badge">v11.2</div>
+</div>
+
+<div class="dashboard">
+    <div class="section-label span-all">亞股 / ASIA</div>
+    <div id="card-twii" class="card"><div class="label">^TWII · 台股大盤</div><div id="p-twii" class="main-val loading">--</div><div id="diff-twii" class="sub-val">--</div><div class="chart-container"><canvas id="chart-twii"></canvas></div></div>
+    <div id="card-n225" class="card"><div class="label">^N225 · 日經225</div><div id="p-n225" class="main-val loading">--</div><div id="diff-n225" class="sub-val">--</div><div class="chart-container"><canvas id="chart-n225"></canvas></div></div>
+    <div id="card-ks11" class="card"><div class="label">^KS11 · 韓國綜合</div><div id="p-ks11" class="main-val loading">--</div><div id="diff-ks11" class="sub-val">--</div><div class="chart-container"><canvas id="chart-ks11"></canvas></div></div>
+    <div id="card-7769" class="card"><div class="label">7769.TW · 鴻勁</div><div id="p-7769" class="main-val loading">--</div><div id="diff-7769" class="sub-val">--</div><div class="chart-container"><canvas id="chart-7769"></canvas></div></div>
+
+    <div class="section-label span-all">美股 / US MARKET</div>
+    <div id="card-ym" class="card"><div class="label">YM=F · 道瓊期貨</div><div id="p-ym" class="main-val loading">--</div><div id="diff-ym" class="sub-val">--</div><div class="chart-container"><canvas id="chart-ym"></canvas></div></div>
+    <div id="card-sox" class="card"><div class="label">^SOX · 費半指數</div><div id="p-sox" class="main-val loading">--</div><div id="diff-sox" class="sub-val">--</div><div class="chart-container"><canvas id="chart-sox"></canvas></div></div>
+    <div id="card-usbond" class="card"><div class="label">US10Y · 10年美債殖利率</div><div id="p-usbond" class="main-val loading">--</div><div id="diff-usbond" class="sub-val">--</div><div class="chart-container"><canvas id="chart-usbond"></canvas></div></div>
+    <div id="card-oil" class="card"><div class="label">BZ=F · 布蘭特原油</div><div id="p-oil" class="main-val loading">--</div><div id="diff-oil" class="sub-val">--</div><div class="chart-container"><canvas id="chart-oil"></canvas></div></div>
+    <div id="card-vix" class="card full-width">
+        <div class="label">^VIX · 美股恐慌指數</div>
+        <div id="p-vix" class="main-val loading">--</div>
+        <div id="diff-vix" class="sub-val">--</div>
+        <div class="alert-hint">⚠ 警戒線：> 30 極度恐慌</div>
+        <div class="chart-container" style="height:40px;"><canvas id="chart-vix"></canvas></div>
+    </div>
+
+    <div class="section-label span-all">外匯 / FX</div>
+    <div id="card-twd" class="card"><div class="label">USD / TWD</div><div id="p-twd" class="main-val loading">--</div><div id="diff-twd" class="sub-val">--</div><div class="chart-container"><canvas id="chart-twd"></canvas></div></div>
+    <div id="card-jpy" class="card">
+        <div class="label">USD / JPY</div>
+        <div id="p-jpy" class="main-val loading">--</div>
+        <div id="diff-jpy" class="sub-val">--</div>
+        <div class="alert-hint">⚠ 警戒：> 159.5</div>
+        <div class="chart-container"><canvas id="chart-jpy"></canvas></div>
+    </div>
+
+    <div class="section-label span-all">商品 / COMMODITIES</div>
+    <div id="card-gold" class="card full-width">
+        <div class="label">XAU · 國際現貨黃金</div>
+        <div style="display:flex; align-items:baseline; gap:10px;"><div id="p-gold" class="main-val loading">--</div><div id="diff-gold" class="sub-val">--</div></div>
+        <div id="calc-gold" style="font-family:'JetBrains Mono'; font-size:11px; color:var(--gold); margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px;">計算中...</div>
+        <div class="chart-container" style="height:35px;"><canvas id="chart-gold"></canvas></div>
+    </div>
+
+    <div class="section-label span-all">情緒 / SENTIMENT</div>
+    <div class="fng-area">
+        <div class="label">Crypto Fear & Greed Index</div>
+        <div class="fng-gauge-wrapper">
+            <canvas id="fngGauge"></canvas>
+            <div id="fngValue">--</div>
         </div>
-        <button class="btn-fetch" onclick="fetchPrice()">雲端抓取</button>
-    </div>
-
-    <div class="group">
-        <label>結束日期 (結算點)</label>
-        <input type="date" id="endDate">
-    </div>
-
-    <div class="batch-box">
-        <div class="batch-title"><span>區間一：50 張 (2.0%)</span><span id="dDisplay1"></span></div>
-        <div class="batch-info">2026/03/06 起</div>
-    </div>
-    <div class="batch-box" style="background: #fff9f2;">
-        <div class="batch-title"><span>區間二：36 張 (2.0%)</span><span id="dDisplay2"></span></div>
-        <div class="batch-info">2026/03/19 起</div>
-    </div>
-    <div class="batch-box" style="background: #f2fff2;">
-        <div class="batch-title"><span>區間三：1 張 (1.5%)</span><span id="dDisplay3"></span></div>
-        <div class="batch-info">2026/04/13 起</div>
-    </div>
-    <div class="batch-box" style="background: #f2faff;">
-        <div class="batch-title"><span>區間四：50 張 (1.25%)</span><span id="dDisplay4"></span></div>
-        <div class="batch-info">2026/04/13 起</div>
-    </div>
-    <div class="batch-box" style="background: #fff0f0; border-color: #ffdada;">
-        <div class="batch-title"><span>區間五：41 張 (1.5%)</span><span id="dDisplay5"></span></div>
-        <div class="batch-info">2026/04/14 起</div>
-    </div>
-
-    <button class="btn-calc" onclick="doTotalCalc()">重新計算詳細明細</button>
-
-    <div id="res" class="result">
-        <div class="sim-box">
-            <div style="font-size:13px; color:#856404; font-weight:600;">💡 模擬 178張 借滿一年穩定收益</div>
-            <div class="val-daily" id="simDaily" style="color: #d97706;">$0</div>
-            <div style="font-size:12px; color:#997404;">預估每日實領 (僅扣手續費與稅)</div>
+        <div id="fngLabel" style="font-family:'JetBrains Mono'; font-size:11px; margin-top:10px;">--</div>
+        <div class="btn-row">
+            <a href="https://www.cnn.com/markets/fear-and-greed" target="_blank" class="btn-link btn-cnn">CNN 恐慌指數 <span style="font-size:9px;opacity:0.8">警戒: < 10</span></a>
+            <a href="https://www.wantgoo.com/index/vixtwn" target="_blank" class="btn-link">台股 VIX <span style="font-size:9px;opacity:0.8">警戒: > 40</span></a>
         </div>
-
-        <div class="summary-box">
-            <div style="font-size:14px; color:#0056b3; font-weight:600;">當前區間平均實領日收</div>
-            <div class="val-daily" id="totalDaily"></div>
-            <div style="font-size:14px; color:#1c1c1e; margin-top:10px; font-weight:600;">合併實領總額 (Net)</div>
-            <div class="val-big" id="totalNet"></div>
-        </div>
-
-        <div class="detail-card">
-            <div class="sub-title">各區間原始收益 (Gross)</div>
-            <div class="line"><span>50張 (2.0%)</span><span id="g1"></span></div>
-            <div class="line"><span>36張 (2.0%)</span><span id="g2"></span></div>
-            <div class="line"><span>1張 (1.5%)</span><span id="g3"></span></div>
-            <div class="line"><span>50張 (1.25%)</span><span id="g4"></span></div>
-            <div class="line"><span>41張 (1.5%)</span><span id="g5"></span></div>
-            <div class="line" style="border-top:1px dashed #ccc; padding-top:4px; margin-top:4px; font-weight:700;">
-                <span>總計原始利息</span><span id="sumGross"></span>
-            </div>
-        </div>
-
-        <div class="detail-card">
-            <div class="sub-title">合併代扣稅費明細</div>
-            <div class="line"><span>手續費 (20%)</span><span id="sumFee"></span></div>
-            <div class="line" style="color:var(--ios-red);"><span>所得稅 (40%)</span><span id="sumTax"></span></div>
-            <div class="line" style="color:var(--ios-gray); font-style: italic;"><span>二代健保 (免徵)</span><span>$0</span></div>
-        </div>
+        <button class="btn-refresh" onclick="updateAll()">⟳ FORCE REFRESH</button>
     </div>
 </div>
 
+<div id="log-window">▶ System Ready...</div>
+
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxi2Xm_MZ1Bak8sAIfC-MiPaHERwuqpz8eSh8yRUy5efO8sa6Mur_XJ95BHhqYtKnJ7ww/exec';
+    const PROXY_URL = 'https://script.google.com/macros/s/AKfycbyNlJGWxjsAK-uX34PxvTT3nFaezansCwcL9a7dvGS9ccOsFW8IviPc59WlVKshS9DzQg/exec';
+    let charts = {};
 
-document.getElementById('endDate').valueAsDate = new Date();
-
-async function fetchPrice() {
-    const btn = document.querySelector('.btn-fetch');
-    btn.innerText = "連線中...";
-    try {
-        const response = await fetch(GAS_URL);
-        const data = await response.json();
-        let price = data.chart?.result[0]?.meta?.regularMarketPrice || data.price || data;
-        if (price && !isNaN(price)) {
-            document.getElementById('price').value = price;
-            doTotalCalc();
-            btn.innerText = "抓取成功";
-        }
-    } catch (e) { btn.innerText = "失敗"; }
-    finally { setTimeout(() => { btn.innerText = "雲端抓取"; }, 2000); }
-}
-
-function getGrossInfo(lots, price, rate, startStr, endStr) {
-    const start = new Date(startStr);
-    const end = new Date(endStr);
-    const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    if (diffDays <= 0) return { gross: 0, days: 0 };
-    const gross = Math.round((lots * 1000 * price * rate / 365) * diffDays);
-    return { gross, days: diffDays };
-}
-
-function doTotalCalc() {
-    const P = parseFloat(document.getElementById('price').value) || 0;
-    const endStr = document.getElementById('endDate').value;
-    
-    const b1 = getGrossInfo(50, P, 0.02, "2026-03-06", endStr);
-    const b2 = getGrossInfo(36, P, 0.02, "2026-03-19", endStr);
-    const b3 = getGrossInfo(1, P, 0.015, "2026-04-13", endStr);
-    const b4 = getGrossInfo(50, P, 0.0125, "2026-04-13", endStr);
-    const b5 = getGrossInfo(41, P, 0.015, "2026-04-14", endStr);
-
-    document.getElementById('dDisplay1').innerText = b1.days + " 天";
-    document.getElementById('dDisplay2').innerText = b2.days + " 天";
-    document.getElementById('dDisplay3').innerText = b3.days + " 天";
-    document.getElementById('dDisplay4').innerText = b4.days + " 天";
-    document.getElementById('dDisplay5').innerText = b5.days + " 天";
-    
-    document.getElementById('g1').innerText = "$" + b1.gross.toLocaleString();
-    document.getElementById('g2').innerText = "$" + b2.gross.toLocaleString();
-    document.getElementById('g3').innerText = "$" + b3.gross.toLocaleString();
-    document.getElementById('g4').innerText = "$" + b4.gross.toLocaleString();
-    document.getElementById('g5').innerText = "$" + b5.gross.toLocaleString();
-
-    const totalGross = b1.gross + b2.gross + b3.gross + b4.gross + b5.gross;
-    const totalFee = Math.round(totalGross * 0.2);
-    const baseForTax = totalGross - totalFee;
-    
-    let totalTax = 0;
-    // 僅保留所得稅門檻計算，移除健保
-    if (baseForTax >= 20000) {
-        totalTax = Math.round(baseForTax * 0.4);
+    function addLog(msg) {
+        const el = document.getElementById('log-window');
+        el.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}\n` + el.innerHTML;
     }
-    
-    const finalNet = totalGross - totalFee - totalTax;
-    const maxDays = Math.max(b1.days, b2.days, b3.days, b4.days, b5.days, 1);
-    
-    document.getElementById('sumGross').innerText = "$" + totalGross.toLocaleString();
-    document.getElementById('sumFee').innerText = "-$" + totalFee.toLocaleString();
-    document.getElementById('sumTax').innerText = "-$" + totalTax.toLocaleString();
-    document.getElementById('totalDaily').innerText = "$" + Math.floor(finalNet / maxDays).toLocaleString();
-    document.getElementById('totalNet').innerText = "$" + finalNet.toLocaleString();
 
-    // 模擬 178張 借滿一年收益
-    const simGross = (86 * 1000 * P * 0.02) + (1 * 1000 * P * 0.015) + (50 * 1000 * P * 0.0125) + (41 * 1000 * P * 0.015);
-    const simFee = simGross * 0.2;
-    const simBase = simGross - simFee;
-    let sTax = 0;
-    if (simBase >= 20000) { sTax = simBase * 0.4; }
-    const simNetYearly = simGross - simFee - sTax;
-    document.getElementById('simDaily').innerText = "$" + Math.floor(simNetYearly / 365).toLocaleString();
-}
+    function drawGauge(value) {
+        const canvas = document.getElementById('fngGauge');
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = 210 * dpr; canvas.height = 108 * dpr;
+        canvas.style.width = '210px'; canvas.style.height = '108px';
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, 210, 108);
+        ctx.beginPath(); ctx.arc(105, 98, 80, Math.PI, 0); ctx.lineWidth = 12; ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.stroke();
+        const grad = ctx.createLinearGradient(25, 0, 185, 0);
+        grad.addColorStop(0, '#ff4d4d'); grad.addColorStop(0.5, '#f0b429'); grad.addColorStop(1, '#00e676');
+        ctx.beginPath(); ctx.arc(105, 98, 80, Math.PI, Math.PI + (Math.PI * value / 100)); ctx.strokeStyle = grad; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.stroke();
+    }
 
-window.onload = fetchPrice;
+    function renderSparkline(id, historyData, color) {
+        const canvas = document.getElementById(`chart-${id}`);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: historyData.map((_, i) => i),
+                datasets: [{
+                    data: historyData, borderColor: color, borderWidth: 2, pointRadius: 0, fill: true,
+                    backgroundColor: (c) => {
+                        const g = c.chart.ctx.createLinearGradient(0, 0, 0, 40);
+                        g.addColorStop(0, color + '20'); g.addColorStop(1, color + '00');
+                        return g;
+                    }, tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+        });
+    }
+
+    function updateCard(id, data) {
+        if (!data || data.error || !data.chart?.result) return null;
+        const res = data.chart.result[0];
+        const price = res.meta.regularMarketPrice;
+        const prev = res.meta.previousClose || price;
+        const diff = price - prev;
+        const perc = (diff / prev) * 100;
+        const color = diff > 0 ? '#ff6060' : (diff < 0 ? '#2eeb82' : '#8a9ab5');
+        const decimals = (id === 'twd' || id === 'jpy' || id === 'usbond') ? 3 : 2;
+        
+        let displayPrice = price.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        if (id === 'usbond') displayPrice += '%';
+        
+        document.getElementById(`p-${id}`).innerText = displayPrice;
+        document.getElementById(`p-${id}`).style.color = color;
+        document.getElementById(`p-${id}`).classList.remove('loading');
+
+        if (document.getElementById(`diff-${id}`)) {
+            document.getElementById(`diff-${id}`).innerText = `${diff > 0 ? '▲' : '▼'} ${Math.abs(diff).toFixed(decimals)} (${perc.toFixed(2)}%)`;
+            document.getElementById(`diff-${id}`).style.color = color;
+        }
+
+        const isAlert = (id === 'jpy' && price > 159.5) || (id === 'vix' && price > 30);
+        document.getElementById(`card-${id}`).className = `card ${['gold', 'vix'].includes(id) ? 'full-width' : ''} ${diff > 0 ? 'up' : 'down'} ${isAlert ? 'alert-active' : ''}`;
+
+        try {
+            const h = res.indicators.quote[0].close.filter(v => v !== null);
+            if (h.length > 0) renderSparkline(id, h, color);
+        } catch (e) {}
+        return price;
+    }
+
+    async function updateAll() {
+        addLog('▶ Syncing Markets...');
+        try {
+            const res = await fetch(PROXY_URL);
+            const data = await res.json();
+
+            updateCard('twii', data.stock_twii);
+            updateCard('n225', data.stock_n225);
+            updateCard('ks11', data.stock_ks11);
+            updateCard('7769', data.stock_7769);
+            updateCard('ym', data.stock_ym);
+            updateCard('sox', data.stock_sox);
+            updateCard('usbond', data.us_bond);
+            updateCard('oil', data.oil_brent);
+            updateCard('vix', data.vix_index);
+            const liveTwd = updateCard('twd', data.usd_twd);
+            updateCard('jpy', data.usd_jpy);
+
+            if (data.gold_price) {
+                const gp = updateCard('gold', data.gold_price);
+                if (liveTwd && gp) {
+                    const ntG = (gp * liveTwd) / 31.1035;
+                    document.getElementById('calc-gold').innerHTML = `換算 &nbsp;${Math.round(ntG).toLocaleString()} NT$ / 克 &nbsp; | &nbsp; 銀樓估價 ${(Math.round(ntG * 3.75) + 500).toLocaleString()} NT$ / 錢`;
+                }
+            }
+
+            if (data.crypto_fng?.data) {
+                const val = parseInt(data.crypto_fng.data[0].value);
+                document.getElementById('fngValue').innerText = val;
+                document.getElementById('fngLabel').innerText = data.crypto_fng.data[0].value_classification.toUpperCase();
+                drawGauge(val);
+                addLog('✅ All systems online.');
+            }
+        } catch (e) {
+            addLog('❌ Sync Error: ' + e.message);
+        }
+    }
+
+    updateAll();
+    setInterval(updateAll, 300000);
 </script>
 </body>
 </html>
