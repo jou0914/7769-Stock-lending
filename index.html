@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>7769 收益計算 - 178張完整版</title>
+    <title>7769 收益計算 - 178張免徵健保版</title>
     <style>
         :root { --ios-blue: #007AFF; --ios-green: #34C759; --ios-red: #FF3B30; --ios-gray: #8e8e93; }
         body { font-family: -apple-system, sans-serif; background: #f2f2f7; padding: 10px; margin: 0; }
@@ -31,7 +31,7 @@
 <body>
 
 <div class="card">
-    <h2>7769 鴻勁 收益明細 (178張)</h2>
+    <h2>7769 鴻勁 收益明細 (免徵健保)</h2>
     
     <div class="row">
         <div class="group" style="flex:2">
@@ -73,7 +73,7 @@
         <div class="sim-box">
             <div style="font-size:13px; color:#856404; font-weight:600;">💡 模擬 178張 借滿一年穩定收益</div>
             <div class="val-daily" id="simDaily" style="color: #d97706;">$0</div>
-            <div style="font-size:12px; color:#997404;">預估每日實領 (已扣除稅費)</div>
+            <div style="font-size:12px; color:#997404;">預估每日實領 (僅扣手續費與稅)</div>
         </div>
 
         <div class="summary-box">
@@ -99,7 +99,7 @@
             <div class="sub-title">合併代扣稅費明細</div>
             <div class="line"><span>手續費 (20%)</span><span id="sumFee"></span></div>
             <div class="line" style="color:var(--ios-red);"><span>所得稅 (40%)</span><span id="sumTax"></span></div>
-            <div class="line" style="color:var(--ios-red);"><span>二代健保 (2.11%)</span><span id="sumNhi"></span></div>
+            <div class="line" style="color:var(--ios-gray); font-style: italic;"><span>二代健保 (免徵)</span><span>$0</span></div>
         </div>
     </div>
 </div>
@@ -142,7 +142,7 @@ function doTotalCalc() {
     const b2 = getGrossInfo(36, P, 0.02, "2026-03-19", endStr);
     const b3 = getGrossInfo(1, P, 0.015, "2026-04-13", endStr);
     const b4 = getGrossInfo(50, P, 0.0125, "2026-04-13", endStr);
-    const b5 = getGrossInfo(41, P, 0.015, "2026-04-14", endStr); // 新增區間
+    const b5 = getGrossInfo(41, P, 0.015, "2026-04-14", endStr);
 
     document.getElementById('dDisplay1').innerText = b1.days + " 天";
     document.getElementById('dDisplay2').innerText = b2.days + " 天";
@@ -160,29 +160,28 @@ function doTotalCalc() {
     const totalFee = Math.round(totalGross * 0.2);
     const baseForTax = totalGross - totalFee;
     
-    let totalTax = 0, totalNhi = 0;
+    let totalTax = 0;
+    // 僅保留所得稅門檻計算，移除健保
     if (baseForTax >= 20000) {
         totalTax = Math.round(baseForTax * 0.4);
-        totalNhi = Math.round(baseForTax * 0.0211);
     }
     
-    const finalNet = totalGross - totalFee - totalTax - totalNhi;
+    const finalNet = totalGross - totalFee - totalTax;
     const maxDays = Math.max(b1.days, b2.days, b3.days, b4.days, b5.days, 1);
     
     document.getElementById('sumGross').innerText = "$" + totalGross.toLocaleString();
     document.getElementById('sumFee').innerText = "-$" + totalFee.toLocaleString();
     document.getElementById('sumTax').innerText = "-$" + totalTax.toLocaleString();
-    document.getElementById('sumNhi').innerText = "-$" + totalNhi.toLocaleString();
     document.getElementById('totalDaily').innerText = "$" + Math.floor(finalNet / maxDays).toLocaleString();
     document.getElementById('totalNet').innerText = "$" + finalNet.toLocaleString();
 
-    // 模擬 178張 借滿一年
+    // 模擬 178張 借滿一年收益
     const simGross = (86 * 1000 * P * 0.02) + (1 * 1000 * P * 0.015) + (50 * 1000 * P * 0.0125) + (41 * 1000 * P * 0.015);
     const simFee = simGross * 0.2;
     const simBase = simGross - simFee;
-    let sTax = 0, sNhi = 0;
-    if (simBase >= 20000) { sTax = simBase * 0.4; sNhi = simBase * 0.0211; }
-    const simNetYearly = simGross - simFee - sTax - sNhi;
+    let sTax = 0;
+    if (simBase >= 20000) { sTax = simBase * 0.4; }
+    const simNetYearly = simGross - simFee - sTax;
     document.getElementById('simDaily').innerText = "$" + Math.floor(simNetYearly / 365).toLocaleString();
 }
 
